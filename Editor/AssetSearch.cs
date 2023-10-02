@@ -6,7 +6,7 @@ public static class AssetSearch
 
     public static void FindAllAssets()
     {
-        AssetArray = AssetDatabase.FindAssets("",new []{"Assets/"});
+        AssetArray = AssetDatabase.FindAssets("t: prefab",new []{"Assets/"});
     }
 
     public static void FindAllAssets(string searchPath)

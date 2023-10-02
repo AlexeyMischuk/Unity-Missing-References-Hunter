@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -8,6 +9,7 @@ public class MissingReferencesWindow : EditorWindow
     private int _currentPage;
     private int _totalPages;
     private bool _isSearchFinished;
+    private static List<AssetMissingRef> _missingRefObjects;
 
     private const int ItemsPerPage = 10;
     
@@ -31,7 +33,9 @@ public class MissingReferencesWindow : EditorWindow
         if (GUILayout.Button("Find Missing References", buttonStyle, GUILayout.MaxWidth(300)))
         {
             AssetSearch.FindAllAssets();
-            _totalPages = Mathf.CeilToInt((float)AssetSearch.AssetArray.Length / ItemsPerPage);
+            MissingReferencesFinder.FindAssets(AssetSearch.AssetArray);
+            _missingRefObjects = MissingReferencesFinder.AssetsWithMissingRef;
+            _totalPages = Mathf.CeilToInt((float)_missingRefObjects.Count / ItemsPerPage);
             _isSearchFinished = true;
         }
         GUILayout.FlexibleSpace();
@@ -73,7 +77,7 @@ public class MissingReferencesWindow : EditorWindow
                 var endIndex = startIndex + ItemsPerPage;
                 if (_currentPage == _totalPages-1)
                 {
-                    endIndex = AssetSearch.AssetArray.Length;
+                    endIndex = MissingReferencesFinder.AssetsWithMissingRef.Count;
                 }
                 for (var j = startIndex; j < endIndex; j++)
                 {
@@ -94,8 +98,7 @@ public class MissingReferencesWindow : EditorWindow
 
     private static void CreateContentRow(int assetIndex)
     {
-        var assetGuid = AssetSearch.AssetArray[assetIndex];
-        var assetObject = RestoreObjectFromGuid(assetGuid);
+        var assetObject = _missingRefObjects[assetIndex].Asset;
         GUILayout.BeginHorizontal();
         EditorGUILayout.ObjectField(assetObject, typeof(Object), true, GUILayout.Width(250));
         GUILayout.Label("asset path");
