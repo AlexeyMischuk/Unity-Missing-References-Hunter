@@ -9,7 +9,7 @@ public class MissingReferencesWindow : EditorWindow
     private int _currentPage;
     private int _totalPages;
     private bool _isSearchFinished;
-    private static List<AssetMissingRef> _missingRefObjects;
+    private static List<Object> _missingRefObjects;
 
     private const int ItemsPerPage = 10;
     
@@ -33,7 +33,7 @@ public class MissingReferencesWindow : EditorWindow
         if (GUILayout.Button("Find Missing References", buttonStyle, GUILayout.MaxWidth(300)))
         {
             AssetSearch.FindAllAssets();
-            MissingReferencesFinder.FindAssets(AssetSearch.AssetArray);
+            MissingReferencesFinder.FindAssets(AssetSearch.AssetsList);
             _missingRefObjects = MissingReferencesFinder.AssetsWithMissingRef;
             _totalPages = Mathf.CeilToInt((float)_missingRefObjects.Count / ItemsPerPage);
             _isSearchFinished = true;
@@ -64,41 +64,28 @@ public class MissingReferencesWindow : EditorWindow
             _scrollPosition = GUILayout.BeginScrollView(
                 _scrollPosition, GUILayout.MaxWidth(position.width-10));
             GUILayout.BeginVertical();
-            if (_currentPage == 0)
+            
+            var startIndex = _currentPage * ItemsPerPage;
+            var endIndex = (_currentPage * ItemsPerPage) + ItemsPerPage;
+            if (_missingRefObjects.Count < endIndex)
             {
-                for (var j = 0; j < ItemsPerPage; j++)
-                {
-                    CreateContentRow(j);
-                }
+                endIndex = _missingRefObjects.Count == 1 ? 1 : _missingRefObjects.Count - 1;
             }
-            else
+
+            for (var i = startIndex; i < endIndex; i++)
             {
-                var startIndex = _currentPage * ItemsPerPage;
-                var endIndex = startIndex + ItemsPerPage;
-                if (_currentPage == _totalPages-1)
-                {
-                    endIndex = MissingReferencesFinder.AssetsWithMissingRef.Count;
-                }
-                for (var j = startIndex; j < endIndex; j++)
-                {
-                    CreateContentRow(j);
-                }
+                CreateContentRow(i);
             }
+            
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
             GUILayout.Space(5);
         }
     }
 
-    private static Object RestoreObjectFromGuid(string guid)
-    {
-        var assetPath = AssetDatabase.GUIDToAssetPath(guid);
-        return AssetDatabase.LoadAssetAtPath<Object>(assetPath);
-    }
-
     private static void CreateContentRow(int assetIndex)
     {
-        var assetObject = _missingRefObjects[assetIndex].Asset;
+        var assetObject = _missingRefObjects[assetIndex];
         GUILayout.BeginHorizontal();
         EditorGUILayout.ObjectField(assetObject, typeof(Object), true, GUILayout.Width(250));
         GUILayout.Label("asset path");

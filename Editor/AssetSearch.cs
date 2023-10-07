@@ -1,16 +1,35 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 
 public static class AssetSearch
 {
-    public static string[] AssetArray { get; private set; }
+    public static List<string> AssetsList { get; private set; }
 
     public static void FindAllAssets()
     {
-        AssetArray = AssetDatabase.FindAssets("t: prefab",new []{"Assets/"});
+        AssetsList = CheckForFolders(
+            AssetDatabase.FindAssets("",new []{"Assets/"}));
     }
 
     public static void FindAllAssets(string searchPath)
     {
-        AssetArray = AssetDatabase.FindAssets("", new[] { searchPath });
+        AssetsList = CheckForFolders(
+            AssetDatabase.FindAssets("", new[] { searchPath }));
+    }
+
+    private static List<string> CheckForFolders(string[] allAssets)
+    {
+        var assetsWithoutFolders = new List<string>();
+        foreach (var assetGuid in allAssets)
+        {
+            var assetPath = AssetDatabase.GUIDToAssetPath(assetGuid);
+            const string pattern = @"(?!.*\.cs$)\.[^.]+$"; // any file except .cs
+            if (Regex.IsMatch(assetPath, pattern))
+            {
+                assetsWithoutFolders.Add(assetPath);
+            }
+        }
+        return assetsWithoutFolders;
     }
 }
