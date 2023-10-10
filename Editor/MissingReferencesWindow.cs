@@ -69,7 +69,7 @@ public class MissingReferencesWindow : EditorWindow
             var endIndex = (_currentPage * ItemsPerPage) + ItemsPerPage;
             if (_missingRefObjects.Count < endIndex)
             {
-                endIndex = _missingRefObjects.Count == 1 ? 1 : _missingRefObjects.Count - 1;
+                endIndex = _missingRefObjects.Count;
             }
 
             for (var i = startIndex; i < endIndex; i++)
