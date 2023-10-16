@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 public static class MissingReferencesFinder
@@ -10,23 +12,66 @@ public static class MissingReferencesFinder
     public static void FindAssets(List<string> assetsList)
     {
         AssetsWithMissingRef.Clear();
-
+        
         foreach (var assetPath in assetsList)
         {
             if (assetPath.Contains(".prefab"))
             {
                 var assetObject = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
-                var components = assetObject.GetComponents<Component>();
+                var components = assetObject.GetComponentsInChildren<Component>(true);
                 foreach (var comp in components)
                 {
-                    if (CheckProperties(comp)) AssetsWithMissingRef.Add(assetObject);
+                    if (comp == null)
+                    {
+                        AssetsWithMissingRef.Add(assetObject);
+                    }
+                    else if (CheckProperties(comp))
+                    {
+                         AssetsWithMissingRef.Add(assetObject);
+                    }
                 }
+            }
+            else if (assetPath.Contains(".unity"))
+            {
+                var assetObject = AssetDatabase.LoadAssetAtPath<SceneAsset>(assetPath);
+                var currentScenePath = SceneManager.GetActiveScene().path;
+                var scene = EditorSceneManager.OpenScene(assetPath, OpenSceneMode.Single);
+                var sceneObjects = scene.GetRootGameObjects();
+                foreach (var obj in sceneObjects)
+                {
+                    var components = obj.GetComponentsInChildren<Component>();
+                    foreach (var comp in components)
+                    {
+                        if (comp == null)
+                        {
+                            AssetsWithMissingRef.Add(assetObject);
+                        }
+                        else if (CheckProperties(comp))
+                        {
+                            AssetsWithMissingRef.Add(assetObject);
+                        }
+                    }
+                }
+                
+                EditorSceneManager.OpenScene(currentScenePath);
             }
             else
             {
-                var assetObject = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
+                var assetObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
+                var subAssets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                
                 if (CheckProperties(assetObject)) AssetsWithMissingRef.Add(assetObject);
+                if (subAssets != null)
+                {
+                    foreach (var asset in subAssets)
+                    {
+                        if (CheckProperties(asset)) AssetsWithMissingRef.Add(asset);
+                    }
+                }
             }
+            
+            
+            
         }
     }
 
