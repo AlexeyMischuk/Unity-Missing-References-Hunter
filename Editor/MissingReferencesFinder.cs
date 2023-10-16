@@ -52,26 +52,16 @@ public static class MissingReferencesFinder
                         }
                     }
                 }
-                
                 EditorSceneManager.OpenScene(currentScenePath);
             }
             else
             {
-                var assetObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
                 var subAssets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
-                
-                if (CheckProperties(assetObject)) AssetsWithMissingRef.Add(assetObject);
-                if (subAssets != null)
+                foreach (var asset in subAssets)
                 {
-                    foreach (var asset in subAssets)
-                    {
-                        if (CheckProperties(asset)) AssetsWithMissingRef.Add(asset);
-                    }
+                    if (CheckProperties(asset)) AssetsWithMissingRef.Add(asset);
                 }
             }
-            
-            
-            
         }
     }
 
