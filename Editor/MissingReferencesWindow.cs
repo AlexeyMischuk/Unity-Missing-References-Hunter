@@ -34,7 +34,7 @@ public class MissingReferencesWindow : EditorWindow
         {
             AssetSearch.FindAllAssets();
             MissingReferencesFinder.FindAssets(AssetSearch.AssetsList);
-            _missingRefObjects = MissingReferencesFinder.AssetsWithMissingRef;
+            _missingRefObjects = MissingReferencesFinder.ObjectIndex;
             _totalPages = Mathf.CeilToInt((float)_missingRefObjects.Count / ItemsPerPage);
             _isSearchFinished = true;
         }
@@ -86,9 +86,16 @@ public class MissingReferencesWindow : EditorWindow
     private static void CreateContentRow(int assetIndex)
     {
         var assetObject = _missingRefObjects[assetIndex];
+        var objectComponents = MissingReferencesFinder.GetComponentName(assetObject);
         GUILayout.BeginHorizontal();
         EditorGUILayout.ObjectField(assetObject, typeof(Object), true, GUILayout.Width(250));
-        GUILayout.Label("asset path");
+        if (objectComponents != null)
+        {
+            foreach (var component in objectComponents)
+            {
+                GUILayout.Label($"{component.Key}-{component.Value}");
+            }
+        }
         GUILayout.EndHorizontal();  
     }
 }
