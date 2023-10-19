@@ -9,6 +9,8 @@ public class MissingReferencesWindow : EditorWindow
     private int _currentPage;
     private int _totalPages;
     private bool _isSearchFinished;
+    private bool[] _foldoutFlag;
+    
     private static List<Object> _missingRefObjects;
 
     private const int ItemsPerPage = 10;
@@ -22,7 +24,6 @@ public class MissingReferencesWindow : EditorWindow
     public void OnGUI()
     {
         GUILayout.Space(30);
-        
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
         var buttonStyle = new GUIStyle(GUI.skin.button)
@@ -36,11 +37,11 @@ public class MissingReferencesWindow : EditorWindow
             MissingReferencesFinder.FindAssets(AssetSearch.AssetsList);
             _missingRefObjects = MissingReferencesFinder.ObjectIndex;
             _totalPages = Mathf.CeilToInt((float)_missingRefObjects.Count / ItemsPerPage);
+            _foldoutFlag = new bool[_totalPages * ItemsPerPage];
             _isSearchFinished = true;
         }
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
-        
         GUILayout.Space(10);
 
         if (_isSearchFinished)
@@ -60,6 +61,7 @@ public class MissingReferencesWindow : EditorWindow
             }
             GUILayout.EndHorizontal();
             
+            DrawSeparator(Color.black);
             
             _scrollPosition = GUILayout.BeginScrollView(
                 _scrollPosition, GUILayout.MaxWidth(position.width-10));
@@ -79,23 +81,56 @@ public class MissingReferencesWindow : EditorWindow
             
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
-            GUILayout.Space(5);
         }
     }
 
-    private static void CreateContentRow(int assetIndex)
+    private void CreateContentRow(int assetIndex)
     {
         var assetObject = _missingRefObjects[assetIndex];
-        var objectComponents = MissingReferencesFinder.GetComponentName(assetObject);
+        var childrenObjects = MissingReferencesFinder.GetChildrenInformation(assetObject);
+        
+        if (assetIndex % ItemsPerPage != 0) 
+            DrawSeparator(Color.gray);
         GUILayout.BeginHorizontal();
         EditorGUILayout.ObjectField(assetObject, typeof(Object), true, GUILayout.Width(250));
-        if (objectComponents != null)
+        GUILayout.EndHorizontal();
+
+        if(childrenObjects != null)
         {
-            foreach (var component in objectComponents)
-            {
-                GUILayout.Label($"{component.Key}-{component.Value}");
-            }
+            CreateChildrenObjects(childrenObjects, assetIndex);
         }
-        GUILayout.EndHorizontal();  
+    }
+
+    private void CreateChildrenObjects(List<ChildObject> childrenList, int assetIndex)
+    {
+        _foldoutFlag[assetIndex] = EditorGUILayout.Foldout(_foldoutFlag[assetIndex], "Objects with missing references", true);
+        if (_foldoutFlag[assetIndex])
+        {
+            GUILayout.BeginHorizontal();
+            foreach (var child in childrenList)
+            {
+                if (!child.IsScriptMissing)
+                {
+                    EditorGUILayout.BeginVertical();
+                    if(GUILayout.Button(child.ObjectRef.name, GUILayout.Width(150)))
+                    {
+                        Selection.activeObject = child.ObjectRef;
+                    }
+                    EditorGUILayout.LabelField(child.ComponentName, GUILayout.Width(150));
+                    EditorGUILayout.EndVertical();
+                }
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
+    }
+
+    private void DrawSeparator(Color color)
+    {
+        EditorGUILayout.Space();
+        Rect lineRect = EditorGUILayout.GetControlRect(false, 1);
+        lineRect.height = 1;
+        EditorGUI.DrawRect(lineRect, color);
+        EditorGUILayout.Space();
     }
 }
