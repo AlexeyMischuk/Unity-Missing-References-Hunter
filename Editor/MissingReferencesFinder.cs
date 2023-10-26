@@ -10,21 +10,22 @@ public static class MissingReferencesFinder
    
     public static List<Object> ObjectIndex { get; } = new();
 
-    public static void FindAssets(List<string> assetsList)
+    public static void CheckAssets(List<string> assetsList)
     {
         _objectInformation.Clear();
         ObjectIndex.Clear();
         
-        foreach (var assetPath in assetsList)
+        foreach (var assetGuid in assetsList)
         {
-            if (assetPath.Contains(".prefab"))
+            var assetPath = AssetDatabase.GUIDToAssetPath(assetGuid);
+            if (assetPath.EndsWith(".prefab"))
             {
                 var assetObject = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 var components = assetObject.GetComponents<Component>();
                 CheckComponents(components, assetObject, assetObject);
                 SearchInChildren(assetObject, assetObject);
             }
-            else if (assetPath.Contains(".unity"))
+            else if (assetPath.EndsWith(".unity"))
             {
                 var assetObject = AssetDatabase.LoadAssetAtPath<SceneAsset>(assetPath);
                 var scene = EditorSceneManager.OpenScene(assetPath, OpenSceneMode.Additive);
@@ -42,6 +43,7 @@ public static class MissingReferencesFinder
                 var subAssets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
                 foreach (var asset in subAssets)
                 {
+                    if (asset == mainAsset) continue;
                     if (PropertiesHasMissing(asset))
                     {
                         var childObject = new ChildObject(asset, null, false);

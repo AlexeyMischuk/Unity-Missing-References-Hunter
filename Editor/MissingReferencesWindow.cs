@@ -33,8 +33,8 @@ public class MissingReferencesWindow : EditorWindow
         };
         if (GUILayout.Button("Find Missing References", buttonStyle, GUILayout.MaxWidth(300)))
         {
-            AssetSearch.FindAllAssets();
-            MissingReferencesFinder.FindAssets(AssetSearch.AssetsList);
+            AssetSearch.FindAssets();
+            MissingReferencesFinder.CheckAssets(AssetSearch.AssetsList);
             _missingRefObjects = MissingReferencesFinder.ObjectIndex;
             _totalPages = Mathf.CeilToInt((float)_missingRefObjects.Count / ItemsPerPage);
             _foldoutFlag = new bool[_totalPages * ItemsPerPage];

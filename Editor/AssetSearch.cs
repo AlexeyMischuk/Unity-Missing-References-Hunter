@@ -1,35 +1,38 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Linq;
+using System.Text;
 using UnityEditor;
+using UnityEngine;
 
 public static class AssetSearch
 {
-    public static List<string> AssetsList { get; private set; }
+    public static List<string> AssetsList { get; } = new();
+    private static SearchTypes _types;
 
-    public static void FindAllAssets()
+    public static void FindAssets()
     {
-        AssetsList = CheckForFolders(
-            AssetDatabase.FindAssets("",new []{"Assets/"}));
+        AssetsList.Clear();
+        var searchFilter = InitializeSearchExtensions();
+        AssetsList.AddRange(AssetDatabase.FindAssets(searchFilter, new[] { "Assets/" }));
     }
 
-    public static void FindAllAssets(string searchPath)
+    private static string InitializeSearchExtensions()
     {
-        AssetsList = CheckForFolders(
-            AssetDatabase.FindAssets("", new[] { searchPath }));
-    }
-
-    private static List<string> CheckForFolders(string[] allAssets)
-    {
-        var assetsWithoutFolders = new List<string>();
-        foreach (var assetGuid in allAssets)
+        var extensionsGuid = AssetDatabase.FindAssets("SearchTypes t:ScriptableObject", new[] { "Assets/Editor" });
+        var extensionsPath = AssetDatabase.GUIDToAssetPath(extensionsGuid.First());
+        _types = AssetDatabase.LoadAssetAtPath<SearchTypes>(extensionsPath);
+        
+        if (_types == null)
         {
-            var assetPath = AssetDatabase.GUIDToAssetPath(assetGuid);
-            const string pattern = @"(?!.*\.cs$)\.[^.]+$"; // any file except .cs
-            if (Regex.IsMatch(assetPath, pattern))
-            {
-                assetsWithoutFolders.Add(assetPath);
-            }
+            Debug.LogError("SearchTypes cannot be loaded");
+            return null;
         }
-        return assetsWithoutFolders;
+
+        StringBuilder searchFilter = new();
+        foreach (var type in _types.searchTypes)
+        {
+            searchFilter.Append($"t:{type} ");
+        }
+        return searchFilter.ToString();
     }
 }
