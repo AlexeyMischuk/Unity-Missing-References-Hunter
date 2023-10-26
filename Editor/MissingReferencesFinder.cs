@@ -106,7 +106,15 @@ public static class MissingReferencesFinder
                 var componentWithMissing = new ChildObject(currentObject, componentName, false);
                 if (_objectInformation.ContainsKey(rootObject))
                 {
-                    _objectInformation[rootObject].Add(componentWithMissing);
+                    var existedChild = _objectInformation[rootObject].Find(o => o.ObjectRef == currentObject);
+                    if (existedChild != null)
+                    {
+                        existedChild.ComponentName.Add(componentName);
+                    }
+                    else
+                    {
+                        _objectInformation[rootObject].Add(componentWithMissing);
+                    }
                 }
                 else
                 {

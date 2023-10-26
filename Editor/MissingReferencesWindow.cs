@@ -46,20 +46,23 @@ public class MissingReferencesWindow : EditorWindow
 
         if (_isSearchFinished)
         {
-            var pageButtonStyle = new GUIStyle(GUI.skin.button)
+            if (_totalPages > 1)
             {
-                fixedWidth = 30
-            };
-            
-            GUILayout.BeginHorizontal();
-            for (var i = 1; i <= _totalPages; i++)
-            {
-                if (GUILayout.Button($"{i}", pageButtonStyle))
+                var pageButtonStyle = new GUIStyle(GUI.skin.button)
                 {
-                    _currentPage = i - 1;
+                    fixedWidth = 30
+                };
+            
+                GUILayout.BeginHorizontal();
+                for (var i = 1; i <= _totalPages; i++)
+                {
+                    if (GUILayout.Button($"{i}", pageButtonStyle))
+                    {
+                        _currentPage = i - 1;
+                    }
                 }
+                GUILayout.EndHorizontal();
             }
-            GUILayout.EndHorizontal();
             
             DrawSeparator(Color.black);
             
@@ -81,6 +84,7 @@ public class MissingReferencesWindow : EditorWindow
             
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
+            GUILayout.Space(15);
         }
     }
 
@@ -116,7 +120,15 @@ public class MissingReferencesWindow : EditorWindow
                     {
                         Selection.activeObject = child.ObjectRef;
                     }
-                    EditorGUILayout.LabelField(child.ComponentName, GUILayout.Width(150));
+
+                    foreach (var comp in child.ComponentName)       
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.FlexibleSpace();
+                        EditorGUILayout.LabelField(comp, GUILayout.Width(150));
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+                    }
                     EditorGUILayout.EndVertical();
                 }
             }
