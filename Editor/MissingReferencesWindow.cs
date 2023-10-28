@@ -6,6 +6,7 @@ using Object = UnityEngine.Object;
 public class MissingReferencesWindow : EditorWindow
 {
     private Vector2 _scrollPosition;
+    private Vector2 _buttonsScrollPosition;
     private int _currentPage;
     private int _totalPages;
     private bool _isSearchFinished;
@@ -55,6 +56,7 @@ public class MissingReferencesWindow : EditorWindow
                     fixedWidth = 30
                 };
             
+                _buttonsScrollPosition = GUILayout.BeginScrollView(_buttonsScrollPosition, GUILayout.Height(50));
                 GUILayout.BeginHorizontal();
                 for (var i = 1; i <= _totalPages; i++)
                 {
@@ -64,6 +66,7 @@ public class MissingReferencesWindow : EditorWindow
                     }
                 }
                 GUILayout.EndHorizontal();
+                GUILayout.EndScrollView();
             }
             
             DrawSeparator(Color.black);
