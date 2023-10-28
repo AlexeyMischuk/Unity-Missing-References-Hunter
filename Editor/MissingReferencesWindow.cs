@@ -14,6 +14,8 @@ public class MissingReferencesWindow : EditorWindow
     private static List<Object> _missingRefObjects;
 
     private const int ItemsPerPage = 10;
+    private const int ObjectFieldWidth = 250;
+    private const int ButtonWidth = 130;
     
     [MenuItem("Window/Missing References Hunter")]
     public static void ShowWindow()
@@ -95,9 +97,7 @@ public class MissingReferencesWindow : EditorWindow
         
         if (assetIndex % ItemsPerPage != 0) 
             DrawSeparator(Color.gray);
-        GUILayout.BeginHorizontal();
-        EditorGUILayout.ObjectField(assetObject, typeof(Object), true, GUILayout.Width(250));
-        GUILayout.EndHorizontal();
+        EditorGUILayout.ObjectField(assetObject, typeof(Object), true, GUILayout.Width(ObjectFieldWidth));
 
         if(childrenObjects != null)
         {
@@ -110,29 +110,24 @@ public class MissingReferencesWindow : EditorWindow
         _foldoutFlag[assetIndex] = EditorGUILayout.Foldout(_foldoutFlag[assetIndex], "Objects with missing references", true);
         if (_foldoutFlag[assetIndex])
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(GUILayout.Width(ButtonWidth));
             foreach (var child in childrenList)
             {
                 if (!child.IsScriptMissing)
                 {
                     EditorGUILayout.BeginVertical();
-                    if(GUILayout.Button(child.ObjectRef.name, GUILayout.Width(150)))
+                    if(GUILayout.Button(child.ObjectRef.name, GUILayout.Width(ButtonWidth)))
                     {
                         Selection.activeObject = child.ObjectRef;
                     }
-
+                    
                     foreach (var comp in child.ComponentName)       
                     {
-                        GUILayout.BeginHorizontal();
-                        GUILayout.FlexibleSpace();
-                        EditorGUILayout.LabelField(comp, GUILayout.Width(150));
-                        GUILayout.FlexibleSpace();
-                        GUILayout.EndHorizontal();
+                        EditorGUILayout.LabelField(comp, GUILayout.Width(ButtonWidth));
                     }
                     EditorGUILayout.EndVertical();
                 }
             }
-            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
     }
