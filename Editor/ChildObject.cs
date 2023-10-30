@@ -5,7 +5,6 @@ public class ChildObject
 {
     public Object ObjectRef { get; }
     public List<string> ComponentName { get; }
-    public bool IsScriptMissing { get; }
 
     public ChildObject(Object obj, string componentName)
     {
