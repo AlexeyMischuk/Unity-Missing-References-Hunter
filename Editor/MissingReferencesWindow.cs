@@ -116,20 +116,16 @@ public class MissingReferencesWindow : EditorWindow
             GUILayout.BeginHorizontal(GUILayout.Width(ButtonWidth));
             foreach (var child in childrenList)
             {
-                if (!child.IsScriptMissing)
+                EditorGUILayout.BeginVertical();
+                if(GUILayout.Button(child.ObjectRef.name, GUILayout.Width(ButtonWidth)))
                 {
-                    EditorGUILayout.BeginVertical();
-                    if(GUILayout.Button(child.ObjectRef.name, GUILayout.Width(ButtonWidth)))
-                    {
-                        Selection.activeObject = child.ObjectRef;
-                    }
-                    
-                    foreach (var comp in child.ComponentName)       
-                    {
-                        EditorGUILayout.LabelField(comp, GUILayout.Width(ButtonWidth));
-                    }
-                    EditorGUILayout.EndVertical();
+                    Selection.activeObject = child.ObjectRef;
                 }
+                foreach (var comp in child.ComponentName)       
+                {
+                    EditorGUILayout.LabelField(comp, GUILayout.Width(ButtonWidth));
+                }
+                EditorGUILayout.EndVertical();
             }
             GUILayout.EndHorizontal();
         }

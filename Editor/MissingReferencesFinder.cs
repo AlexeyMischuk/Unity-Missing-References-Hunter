@@ -10,6 +10,8 @@ public static class MissingReferencesFinder
    
     public static List<Object> ObjectIndex { get; } = new();
 
+    private const string MissingScript = "Script is missing";
+    
     public static void CheckAssets(List<string> assetsList)
     {
         _objectInformation.Clear();
@@ -46,7 +48,7 @@ public static class MissingReferencesFinder
                     if (asset == mainAsset) continue;
                     if (PropertiesHasMissing(asset))
                     {
-                        var childObject = new ChildObject(asset, null, false);
+                        var childObject = new ChildObject(asset, null);
                         _objectInformation.Add(mainAsset, new List<ChildObject> {childObject});
                         ObjectIndex.Add(mainAsset);
                     }
@@ -88,10 +90,19 @@ public static class MissingReferencesFinder
         {
             if (comp == null)
             {
-                var missingScriptComp = new ChildObject(null, null, true);
+                var missingScriptComp = new ChildObject(currentObject, MissingScript);
+                var existedChild = _objectInformation[rootObject].Find(o => o.ObjectRef == currentObject);
                 if (_objectInformation.ContainsKey(rootObject))
                 {
-                    _objectInformation[rootObject].Add(missingScriptComp);
+                    if (existedChild != null)
+                    {
+                        existedChild.ComponentName.Add(MissingScript);
+                    }
+                    else
+                    {
+                        _objectInformation[rootObject].Add(missingScriptComp);
+                        
+                    }
                 }
                 else
                 {
@@ -103,7 +114,7 @@ public static class MissingReferencesFinder
             else if (PropertiesHasMissing(comp))
             {
                 var componentName = comp.GetType().Name;
-                var componentWithMissing = new ChildObject(currentObject, componentName, false);
+                var componentWithMissing = new ChildObject(currentObject, componentName);
                 if (_objectInformation.ContainsKey(rootObject))
                 {
                     var existedChild = _objectInformation[rootObject].Find(o => o.ObjectRef == currentObject);

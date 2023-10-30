@@ -7,10 +7,9 @@ public class ChildObject
     public List<string> ComponentName { get; }
     public bool IsScriptMissing { get; }
 
-    public ChildObject(Object obj, string componentName, bool isScriptMissing)
+    public ChildObject(Object obj, string componentName)
     {
         ObjectRef = obj;
         ComponentName = new List<string> {componentName};
-        IsScriptMissing = isScriptMissing;
     }
 }
